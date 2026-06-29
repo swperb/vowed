@@ -5,6 +5,8 @@ import { weddings, guestGroups, guests } from "@/lib/db/schema";
 import { getGuestGroupsWithMembers } from "@/lib/db/guests";
 import { eq } from "drizzle-orm";
 import { generateId } from "@/lib/utils";
+import { parseBody, sideEnum, roleEnum } from "@/lib/validation";
+import { z } from "zod";
 
 export async function GET(req: NextRequest) {
   const { userId } = auth();
@@ -30,6 +32,32 @@ export async function GET(req: NextRequest) {
   return NextResponse.json(result);
 }
 
+const createSchema = z.object({
+  group: z.object({
+    name: z.string().min(1).max(200),
+    side: sideEnum.optional(),
+    notes: z.string().max(2000).optional(),
+    addressLine1: z.string().max(200).optional(),
+    city: z.string().max(120).optional(),
+    state: z.string().max(120).optional(),
+    zip: z.string().max(20).optional(),
+  }),
+  members: z
+    .array(
+      z.object({
+        firstName: z.string().min(1).max(120),
+        lastName: z.string().max(120).optional(),
+        email: z.string().max(200).optional(),
+        phone: z.string().max(40).optional(),
+        isChild: z.boolean().optional(),
+        isPlusOne: z.boolean().optional(),
+        role: roleEnum.optional(),
+      })
+    )
+    .min(1)
+    .max(50),
+});
+
 export async function POST(req: NextRequest) {
   const { userId } = auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -39,27 +67,9 @@ export async function POST(req: NextRequest) {
   });
   if (!wedding) return NextResponse.json({ error: "No wedding found" }, { status: 404 });
 
-  const body = await req.json();
-  const { group: groupData, members: membersData } = body as {
-    group: {
-      name: string;
-      side?: string;
-      notes?: string;
-      addressLine1?: string;
-      city?: string;
-      state?: string;
-      zip?: string;
-    };
-    members: Array<{
-      firstName: string;
-      lastName?: string;
-      email?: string;
-      phone?: string;
-      isChild?: boolean;
-      isPlusOne?: boolean;
-      role?: string;
-    }>;
-  };
+  const { data, error } = await parseBody(req, createSchema);
+  if (error) return error;
+  const { group: groupData, members: membersData } = data;
 
   const groupId = generateId();
   const [group] = await db
@@ -68,7 +78,7 @@ export async function POST(req: NextRequest) {
       id: groupId,
       weddingId: wedding.id,
       name: groupData.name,
-      side: (groupData.side as "partner_a" | "partner_b" | "shared") ?? "shared",
+      side: groupData.side ?? "shared",
       notes: groupData.notes ?? null,
       addressLine1: groupData.addressLine1 ?? null,
       city: groupData.city ?? null,
@@ -86,11 +96,11 @@ export async function POST(req: NextRequest) {
         weddingId: wedding.id,
         firstName: m.firstName,
         lastName: m.lastName ?? null,
-        email: m.email ?? null,
+        email: m.email || null,
         phone: m.phone ?? null,
         isChild: m.isChild ?? false,
         isPlusOne: m.isPlusOne ?? false,
-        role: (m.role as "guest" | "wedding_party" | "family" | "vendor" | "officiant") ?? "guest",
+        role: m.role ?? "guest",
       }))
     )
     .returning();

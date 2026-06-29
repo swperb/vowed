@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { weddings, guests } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
+import { parseBody, rsvpStatusEnum } from "@/lib/validation";
+import { z } from "zod";
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   const { userId } = auth();
@@ -18,6 +20,11 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   return NextResponse.json({ success: true });
 }
 
+const putSchema = z.object({
+  rsvpStatus: rsvpStatusEnum.optional(),
+  mealChoice: z.string().max(120).optional(),
+});
+
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   const { userId } = auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -25,16 +32,15 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   const wedding = await db.query.weddings.findFirst({ where: eq(weddings.clerkUserId, userId) });
   if (!wedding) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const body = await req.json();
-  const { rsvpStatus, mealChoice } = body as { rsvpStatus?: string; mealChoice?: string };
+  const { data, error } = await parseBody(req, putSchema);
+  if (error) return error;
 
-  const updates: Record<string, unknown> = {};
-  if (rsvpStatus !== undefined) {
-    updates.rsvpStatus = rsvpStatus;
+  const updates: Record<string, unknown> = { updatedAt: new Date().toISOString() };
+  if (data.rsvpStatus !== undefined) {
+    updates.rsvpStatus = data.rsvpStatus;
     updates.rsvpRespondedAt = new Date().toISOString();
   }
-  if (mealChoice !== undefined) updates.mealChoice = mealChoice;
-  updates.updatedAt = new Date().toISOString();
+  if (data.mealChoice !== undefined) updates.mealChoice = data.mealChoice;
 
   const [updated] = await db
     .update(guests)
@@ -42,5 +48,6 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     .where(and(eq(guests.id, params.id), eq(guests.weddingId, wedding.id)))
     .returning();
 
+  if (!updated) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(updated);
 }

@@ -5,6 +5,8 @@ import { weddings, budgetCategories } from "@/lib/db/schema";
 import { getBudgetSummary } from "@/lib/db/budget";
 import { eq } from "drizzle-orm";
 import { generateId } from "@/lib/utils";
+import { parseBody } from "@/lib/validation";
+import { z } from "zod";
 
 export async function GET() {
   const { userId } = auth();
@@ -17,6 +19,13 @@ export async function GET() {
   return NextResponse.json(summary);
 }
 
+const categorySchema = z.object({
+  name: z.string().min(1).max(120),
+  budgetedAmount: z.number().nonnegative().optional(),
+  color: z.string().max(32).optional(),
+  icon: z.string().max(64).optional(),
+});
+
 export async function POST(req: NextRequest) {
   const { userId } = auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -24,23 +33,18 @@ export async function POST(req: NextRequest) {
   const wedding = await db.query.weddings.findFirst({ where: eq(weddings.clerkUserId, userId) });
   if (!wedding) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const body = await req.json();
-  const { name, budgetedAmount, color, icon } = body as {
-    name: string;
-    budgetedAmount?: number;
-    color?: string;
-    icon?: string;
-  };
+  const { data, error } = await parseBody(req, categorySchema);
+  if (error) return error;
 
   const [category] = await db
     .insert(budgetCategories)
     .values({
       id: generateId(),
       weddingId: wedding.id,
-      name,
-      budgetedAmount: budgetedAmount ?? 0,
-      color: color ?? "#8b5cf6",
-      icon: icon ?? null,
+      name: data.name,
+      budgetedAmount: data.budgetedAmount ?? 0,
+      color: data.color ?? "#8b5cf6",
+      icon: data.icon ?? null,
     })
     .returning();
 

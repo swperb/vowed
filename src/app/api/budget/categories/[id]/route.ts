@@ -3,6 +3,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { weddings, budgetCategories } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
+import { parseBody } from "@/lib/validation";
+import { z } from "zod";
+
+const putSchema = z.object({
+  name: z.string().min(1).max(120).optional(),
+  budgetedAmount: z.number().nonnegative().optional(),
+});
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   const { userId } = auth();
@@ -11,12 +18,12 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   const wedding = await db.query.weddings.findFirst({ where: eq(weddings.clerkUserId, userId) });
   if (!wedding) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const body = await req.json();
-  const { name, budgetedAmount } = body as { name?: string; budgetedAmount?: number };
+  const { data, error } = await parseBody(req, putSchema);
+  if (error) return error;
 
   const updates: Record<string, unknown> = {};
-  if (name !== undefined) updates.name = name;
-  if (budgetedAmount !== undefined) updates.budgetedAmount = budgetedAmount;
+  if (data.name !== undefined) updates.name = data.name;
+  if (data.budgetedAmount !== undefined) updates.budgetedAmount = data.budgetedAmount;
 
   const [updated] = await db
     .update(budgetCategories)
@@ -24,6 +31,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     .where(and(eq(budgetCategories.id, params.id), eq(budgetCategories.weddingId, wedding.id)))
     .returning();
 
+  if (!updated) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(updated);
 }
 

@@ -9,6 +9,7 @@ const securityHeaders = [
 ];
 
 const nextConfig = {
+  poweredByHeader: false,
   experimental: {
     serverComponentsExternalPackages: ["@libsql/client"],
   },

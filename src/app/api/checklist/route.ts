@@ -5,6 +5,8 @@ import { weddings, checklistItems } from "@/lib/db/schema";
 import { DEFAULT_CHECKLIST } from "@/lib/db/checklist-defaults";
 import { eq, count } from "drizzle-orm";
 import { generateId, computeDueDate } from "@/lib/utils";
+import { parseBody } from "@/lib/validation";
+import { z } from "zod";
 
 export async function GET() {
   const { userId } = auth();
@@ -46,6 +48,12 @@ export async function GET() {
   return NextResponse.json(items);
 }
 
+const createSchema = z.object({
+  title: z.string().min(1).max(200),
+  category: z.string().max(80).optional(),
+  dueDate: z.string().max(40).optional(),
+});
+
 export async function POST(req: NextRequest) {
   const { userId } = auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -53,17 +61,17 @@ export async function POST(req: NextRequest) {
   const wedding = await db.query.weddings.findFirst({ where: eq(weddings.clerkUserId, userId) });
   if (!wedding) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const body = await req.json();
-  const { title, category, dueDate } = body as { title: string; category?: string; dueDate?: string };
+  const { data, error } = await parseBody(req, createSchema);
+  if (error) return error;
 
   const [item] = await db
     .insert(checklistItems)
     .values({
       id: generateId(),
       weddingId: wedding.id,
-      title,
-      category: category ?? null,
-      dueDate: dueDate ?? null,
+      title: data.title,
+      category: data.category ?? null,
+      dueDate: data.dueDate ?? null,
       isCustom: true,
       sortOrder: 9999,
     })
