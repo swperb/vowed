@@ -3,6 +3,7 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { weddings, guests } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
+import { clerkClient } from "@clerk/nextjs/server";
 import { rateLimit, clientIp } from "@/lib/ratelimit";
 import { sendRsvpConfirmation } from "@/lib/email";
 
@@ -63,11 +64,24 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ slu
   if (!updated) return NextResponse.json({ error: "Guest not found" }, { status: 404 });
 
   if (updated.email && (rsvpStatus === "attending" || rsvpStatus === "declined")) {
+    // Reply-To = the couple's account email, so a guest's reply reaches them
+    let coupleEmail: string | undefined;
+    try {
+      const client = await clerkClient();
+      const owner = await client.users.getUser(wedding.clerkUserId);
+      coupleEmail =
+        owner.emailAddresses.find((e) => e.id === owner.primaryEmailAddressId)?.emailAddress ??
+        owner.emailAddresses[0]?.emailAddress;
+    } catch (err) {
+      console.error("Could not load couple email for Reply-To:", err);
+    }
+
     await sendRsvpConfirmation({
       to: updated.email,
       guestName: updated.firstName,
       coupleName: `${wedding.partnerAName} & ${wedding.partnerBName}`,
       attending: rsvpStatus === "attending",
+      replyTo: coupleEmail,
     });
   }
 
