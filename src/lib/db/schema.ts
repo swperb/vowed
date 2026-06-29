@@ -191,6 +191,34 @@ export const timelineEvents = sqliteTable(
   }
 );
 
+// ─── Vendors ──────────────────────────────────────────────────────────────────
+// A couple's vendor board: anyone they're considering, in touch with, or booked.
+export const vendors = sqliteTable(
+  "vendors",
+  {
+    id: text("id").primaryKey(),
+    weddingId: text("wedding_id")
+      .notNull()
+      .references(() => weddings.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    category: text("category"), // Venue, Photography, Catering, Florist, Music, etc.
+    status: text("status", {
+      enum: ["favorite", "contacted", "booked", "passed"],
+    }).default("favorite"),
+    website: text("website"),
+    phone: text("phone"),
+    email: text("email"),
+    priceEstimate: real("price_estimate"),
+    notes: text("notes"),
+    sortOrder: integer("sort_order").default(0),
+    createdAt: text("created_at").default(sql`(CURRENT_TIMESTAMP)`),
+    updatedAt: text("updated_at").default(sql`(CURRENT_TIMESTAMP)`),
+  },
+  (t) => ({
+    weddingIdx: index("vendors_wedding_idx").on(t.weddingId),
+  })
+);
+
 // ─── Type exports ─────────────────────────────────────────────────────────────
 export type Wedding = typeof weddings.$inferSelect;
 export type NewWedding = typeof weddings.$inferInsert;
@@ -205,3 +233,5 @@ export type NewBudgetItem = typeof budgetItems.$inferInsert;
 export type ChecklistItem = typeof checklistItems.$inferSelect;
 export type NewChecklistItem = typeof checklistItems.$inferInsert;
 export type TimelineEvent = typeof timelineEvents.$inferSelect;
+export type Vendor = typeof vendors.$inferSelect;
+export type NewVendor = typeof vendors.$inferInsert;

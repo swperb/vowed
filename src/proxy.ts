@@ -10,10 +10,10 @@ const isPublic = createRouteMatcher([
   "/privacy",
   "/terms",
   "/opengraph-image(.*)",
-  "/vendors",
-  "/planners",
-  "/api/vendors",
-  "/api/planners",
+  "/for-vendors",
+  "/for-planners",
+  "/api/inquiries/vendor",
+  "/api/inquiries/planner",
 ]);
 
 export default clerkMiddleware(async (auth, req) => {

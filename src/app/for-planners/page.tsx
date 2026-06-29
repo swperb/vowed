@@ -27,7 +27,7 @@ export default function PlannersPage() {
       message: fd.get("message"),
     };
     try {
-      const res = await fetch("/api/planners", {
+      const res = await fetch("/api/inquiries/planner", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
