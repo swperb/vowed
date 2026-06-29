@@ -12,8 +12,8 @@ const putSchema = z.object({
   dueDate: z.string().max(40).nullable().optional(),
 });
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
-  const { userId } = auth();
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const wedding = await db.query.weddings.findFirst({ where: eq(weddings.clerkUserId, userId) });
@@ -33,22 +33,22 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   const [updated] = await db
     .update(checklistItems)
     .set(updates)
-    .where(and(eq(checklistItems.id, params.id), eq(checklistItems.weddingId, wedding.id)))
+    .where(and(eq(checklistItems.id, (await params).id), eq(checklistItems.weddingId, wedding.id)))
     .returning();
 
   if (!updated) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json(updated);
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  const { userId } = auth();
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const wedding = await db.query.weddings.findFirst({ where: eq(weddings.clerkUserId, userId) });
   if (!wedding) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   await db.delete(checklistItems).where(
-    and(eq(checklistItems.id, params.id), eq(checklistItems.weddingId, wedding.id))
+    and(eq(checklistItems.id, (await params).id), eq(checklistItems.weddingId, wedding.id))
   );
 
   return NextResponse.json({ success: true });

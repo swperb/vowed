@@ -26,3 +26,17 @@ export async function sendRsvpConfirmation(opts: {
     console.error("RSVP confirmation email failed:", err);
   }
 }
+
+// Notify the project admin of a vendor/planner inquiry. No-ops until both
+// RESEND_API_KEY and ADMIN_EMAIL are set.
+export async function sendAdminNotification(subject: string, text: string): Promise<boolean> {
+  const adminEmail = process.env.ADMIN_EMAIL;
+  if (!resend || !adminEmail) return false;
+  try {
+    await resend.emails.send({ from, to: adminEmail, subject, text });
+    return true;
+  } catch (err) {
+    console.error("Admin notification email failed:", err);
+    return false;
+  }
+}

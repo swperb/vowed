@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, use } from "react";
 import { Heart, Search, CheckCircle, XCircle, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -38,7 +38,8 @@ function formatDate(dateStr: string | null): string {
   });
 }
 
-export default function RsvpPage({ params }: { params: { slug: string } }) {
+export default function RsvpPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = use(params);
   const [wedding, setWedding] = useState<WeddingInfo | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [query, setQuery] = useState("");
@@ -50,21 +51,21 @@ export default function RsvpPage({ params }: { params: { slug: string } }) {
   const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/rsvp/${params.slug}`)
+    fetch(`/api/rsvp/${slug}`)
       .then((r) => {
         if (r.status === 404) { setNotFound(true); return null; }
         return r.json();
       })
       .then((data) => { if (data) setWedding(data); });
-  }, [params.slug]);
+  }, [slug]);
 
   const search = useCallback(async (q: string) => {
     if (q.length < 2) { setResults([]); return; }
     setSearching(true);
-    const res = await fetch(`/api/rsvp/${params.slug}/guests?q=${encodeURIComponent(q)}`);
+    const res = await fetch(`/api/rsvp/${slug}/guests?q=${encodeURIComponent(q)}`);
     if (res.ok) setResults(await res.json());
     setSearching(false);
-  }, [params.slug]);
+  }, [slug]);
 
   useEffect(() => {
     const t = setTimeout(() => search(query), 300);
@@ -76,7 +77,7 @@ export default function RsvpPage({ params }: { params: { slug: string } }) {
     if (!selected) return;
     setSubmitting(true);
 
-    const res = await fetch(`/api/rsvp/${params.slug}`, {
+    const res = await fetch(`/api/rsvp/${slug}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

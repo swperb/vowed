@@ -17,7 +17,7 @@ function slugify(a: string, b: string): string {
 }
 
 export async function createWedding(formData: FormData) {
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 
   const partnerAName = formData.get("partnerAName") as string;

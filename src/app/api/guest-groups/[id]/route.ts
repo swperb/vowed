@@ -4,8 +4,8 @@ import { db } from "@/lib/db";
 import { weddings, guestGroups } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  const { userId } = auth();
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const wedding = await db.query.weddings.findFirst({ where: eq(weddings.clerkUserId, userId) });
@@ -13,7 +13,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
   // Cascades to guests via FK
   await db.delete(guestGroups).where(
-    and(eq(guestGroups.id, params.id), eq(guestGroups.weddingId, wedding.id))
+    and(eq(guestGroups.id, (await params).id), eq(guestGroups.weddingId, wedding.id))
   );
 
   return NextResponse.json({ success: true });

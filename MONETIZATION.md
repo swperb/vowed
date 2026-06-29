@@ -1,72 +1,77 @@
 # Vowed Monetization Guide
 
-## The model: Free core, paid native experience
+## The model: free for couples, funded by vendors and planners
 
-### Free forever (web)
-Everything in this repo. The entire planning suite — guest list, budget, checklist, wedding website — free and open source, forever.
-
-**Why:** This is the trust layer. Brides talk to each other. "This is actually free and works" spreads faster than any ad budget.
+Couples never pay. Every planning feature is free forever, on web and iOS. Revenue comes from the
+vendor and planner side of the marketplace, never from the people planning their wedding.
 
 ---
 
-### Premium ($49 one-time or $9/month) — iOS native app
+### Free forever (couples, web + iOS)
 
-The iOS app is where you monetize. It does things the web app genuinely cannot:
+The entire planning suite, guest list, budget, checklist, wedding website, and the native iOS app,
+is free and open source. No feature gates, no premium tier, no trials that expire.
 
-| Feature | Why it's worth paying for |
-|---|---|
-| Apple Contacts import | Import your entire phonebook as guest candidates in one tap |
-| EventKit sync | Wedding tasks and vendor appointments in the native Calendar app |
-| iMessage templates | Send RSVP links as native iMessages (not emails that get ignored) |
-| AirDrop guest cards | Share a guest's contact card to vendor/coordinator instantly |
-| Drag-and-drop seating | Native touch UI for table assignments — feels right on an iPad |
-| Offline mode | Full access on the plane to your destination wedding |
-| Printable PDFs | Day-of timeline, seating chart, vendor contact sheet |
-| Widgets | Guest count / days-to-wedding on the home screen |
-
-**Build the iOS app with:** React Native + Expo + Expo Contacts + Expo Calendar. The schema is already shared.
+**Why:** This is the trust layer. Couples talk to each other. "This is actually free and works"
+spreads faster than any ad budget.
 
 ---
 
-### Ethical vendor listings (optional revenue stream)
+### Support the project (optional tip)
 
-This is where you differentiate from TheKnot's predatory model:
+A one-time "support the project" tip ($9 / $19 / custom) via Stripe. Entirely optional. Nothing is
+ever locked behind it. This is gratitude, not a paywall.
+
+Status: not yet built (needs Stripe checkout + keys).
+
+---
+
+### Vendor listings (/vendors) — $39/month flat
+
+This is the primary revenue stream, and where Vowed differentiates from TheKnot's predatory model:
 
 | TheKnot | Vowed |
 |---|---|
 | 12-month lock-in contract | Month-to-month, cancel any time |
-| $300-400/month | $29-49/month flat |
-| Fake leads reported by vendors | Real couples who matched by location/style |
-| Hidden in the search algorithm | Clearly labeled "Featured vendor" |
+| $300-400/month | $39/month flat |
+| Fake/recycled leads | Couples reach out directly |
+| Buried in a pay-to-win algorithm | Clearly labeled "Featured" |
 | Sales rep pressure tactics | Self-serve signup |
 
-Vendors burned by TheKnot will come to you. There's a whole whistleblower community.
+Vendors burned by TheKnot will come to you. Current state: marketing page + inquiry form live,
+emailing the admin via Resend. Full self-serve billing (Stripe subscriptions) is v2.
 
 ---
 
-### Revenue projections (conservative)
+### Wedding planner white-label (/planners) — B2B
 
-- 10,000 users → 5% premium conversion = 500 × $49 = $24,500/year (one-time)
-- Or 500 × $9/month = $4,500 MRR = $54,000 ARR
-- 50 vendor listings × $39/month = $1,950 MRR additional
+Planners run Vowed for their clients under their own brand: multiple weddings from one account,
+client sharing, their logo on each couple's wedding website. Current state: marketing page +
+waitlist form live (capturing leads). The white-label product itself is v2.
 
-**Target year-1 ARR: $30-60K** with minimal marketing if you seed the right wedding communities (Reddit r/weddingplanning, wedding Facebook groups, TikTok).
+---
+
+### iOS app
+
+Free, like everything else for couples. Monetization stays entirely on the vendor/planner side.
+Build with React Native + Expo; the schema is shared with the web app.
 
 ---
 
 ### Go-to-market
 
-1. Post on r/weddingplanning: "I built a free TheKnot alternative after getting frustrated. Here's what I fixed." (No self-promo tone — show the actual fixes)
+1. Post on r/weddingplanning: "I built a free TheKnot alternative after getting frustrated. Here's what I fixed." (Show the actual fixes, no self-promo tone.)
 2. Post on Hacker News: "Show HN: Free open-source wedding planner"
-3. Target vendors burned by TheKnot — they'll send their clients to you
+3. Target vendors burned by TheKnot, they'll send their clients to you
 4. SEO: "theknot alternative", "free wedding planner", "wedding guest list app"
-5. TikTok: Screen-record the side-by-side of TheKnot loading for 2 minutes vs Vowed loading instantly
+5. TikTok: side-by-side of TheKnot loading for 2 minutes vs Vowed loading instantly
 
 ---
 
 ### What NOT to do
 
-- Don't paywall the guest list or budget tracker
+- Don't paywall any planning feature for couples
 - Don't put ads in the app
-- Don't create 12-month vendor contracts
-- Don't make the free tier artificially limited (100 guest cap, etc.) — that's what makes people hate the platforms they're on
+- Don't create lock-in contracts for vendors
+- Don't artificially limit the free experience (guest caps, etc.)
+- Don't ever charge the couple

@@ -6,15 +6,15 @@ import { eq, and } from "drizzle-orm";
 import { parseBody, rsvpStatusEnum } from "@/lib/validation";
 import { z } from "zod";
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-  const { userId } = auth();
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const wedding = await db.query.weddings.findFirst({ where: eq(weddings.clerkUserId, userId) });
   if (!wedding) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   await db.delete(guests).where(
-    and(eq(guests.id, params.id), eq(guests.weddingId, wedding.id))
+    and(eq(guests.id, (await params).id), eq(guests.weddingId, wedding.id))
   );
 
   return NextResponse.json({ success: true });
@@ -25,8 +25,8 @@ const putSchema = z.object({
   mealChoice: z.string().max(120).optional(),
 });
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
-  const { userId } = auth();
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const wedding = await db.query.weddings.findFirst({ where: eq(weddings.clerkUserId, userId) });
@@ -45,7 +45,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   const [updated] = await db
     .update(guests)
     .set(updates)
-    .where(and(eq(guests.id, params.id), eq(guests.weddingId, wedding.id)))
+    .where(and(eq(guests.id, (await params).id), eq(guests.weddingId, wedding.id)))
     .returning();
 
   if (!updated) return NextResponse.json({ error: "Not found" }, { status: 404 });

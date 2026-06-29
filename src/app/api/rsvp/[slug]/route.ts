@@ -6,9 +6,9 @@ import { eq, and } from "drizzle-orm";
 import { rateLimit, clientIp } from "@/lib/ratelimit";
 import { sendRsvpConfirmation } from "@/lib/email";
 
-export async function GET(req: NextRequest, { params }: { params: { slug: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const wedding = await db.query.weddings.findFirst({
-    where: eq(weddings.websiteSlug, params.slug),
+    where: eq(weddings.websiteSlug, (await params).slug),
   });
 
   if (!wedding) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -28,14 +28,14 @@ const rsvpSchema = z.object({
   mealChoice: z.string().max(120).optional(),
 });
 
-export async function POST(req: NextRequest, { params }: { params: { slug: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   // Rate limit public submissions by IP (no-op until Upstash is configured)
   if (!(await rateLimit(`rsvp:${clientIp(req)}`))) {
     return NextResponse.json({ error: "Too many requests. Please try again shortly." }, { status: 429 });
   }
 
   const wedding = await db.query.weddings.findFirst({
-    where: eq(weddings.websiteSlug, params.slug),
+    where: eq(weddings.websiteSlug, (await params).slug),
   });
   if (!wedding) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
