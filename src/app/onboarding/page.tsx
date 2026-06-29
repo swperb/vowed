@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { toast } from "sonner";
 import { createWedding } from "./actions";
 import { Heart, ChevronRight, ChevronLeft } from "lucide-react";
 
@@ -48,8 +49,9 @@ export default function OnboardingPage() {
     fd.set("venue", venue);
     fd.set("city", city);
     fd.set("websiteSlug", slug);
-    startTransition(() => {
-      createWedding(fd);
+    startTransition(async () => {
+      const result = await createWedding(fd);
+      if (result?.error) toast.error(result.error);
     });
   }
 
@@ -178,7 +180,9 @@ export default function OnboardingPage() {
                 />
                 {slug && (
                   <p className="text-xs text-stone-400 mt-1.5">
-                    Your RSVP page: <span className="text-stone-600">vowed.love/rsvp/{slug}</span>
+                    Your RSVP page: <span className="text-stone-600">vowed.love/rsvp/{slug}-<span className="text-stone-400">xxxx</span></span>
+                    <br />
+                    A short code is added to the end to keep your link unique.
                   </p>
                 )}
               </div>
