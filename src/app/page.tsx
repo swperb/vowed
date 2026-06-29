@@ -177,9 +177,26 @@ export default function LandingPage() {
             <Heart className="w-7 h-7 text-brand-500 mb-3" />
             <h3 className="font-semibold text-stone-900 mb-1">Support the project</h3>
             <p className="text-sm text-stone-500 leading-relaxed mb-3">
-              Love Vowed? Leave an optional one-time tip. Nothing is ever locked behind it.
+              Love Vowed? Leave an optional tip. Nothing is ever locked behind it.
             </p>
-            <span className="text-xs font-medium text-stone-400">Coming soon</span>
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm font-medium">
+              <a
+                href="https://github.com/sponsors/swperb"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-brand-600 hover:text-brand-700 inline-flex items-center gap-1"
+              >
+                Sponsor on GitHub <ArrowRight className="w-3.5 h-3.5" />
+              </a>
+              <a
+                href="https://ko-fi.com/swperb"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-brand-600 hover:text-brand-700 inline-flex items-center gap-1"
+              >
+                Tip on Ko-fi <ArrowRight className="w-3.5 h-3.5" />
+              </a>
+            </div>
           </div>
           <Link href="/vendors" className="card p-6 hover:border-brand-200 transition-colors group">
             <Store className="w-7 h-7 text-brand-500 mb-3" />
