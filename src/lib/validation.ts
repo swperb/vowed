@@ -18,3 +18,4 @@ export async function parseBody<T extends z.ZodTypeAny>(
 export const rsvpStatusEnum = z.enum(["pending", "attending", "declined", "maybe"]);
 export const sideEnum = z.enum(["partner_a", "partner_b", "shared"]);
 export const roleEnum = z.enum(["guest", "wedding_party", "family", "vendor", "officiant"]);
+export const vendorStatusEnum = z.enum(["favorite", "contacted", "booked", "passed"]);

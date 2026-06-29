@@ -198,7 +198,7 @@ export default function LandingPage() {
               </a>
             </div>
           </div>
-          <Link href="/vendors" className="card p-6 hover:border-brand-200 transition-colors group">
+          <Link href="/for-vendors" className="card p-6 hover:border-brand-200 transition-colors group">
             <Store className="w-7 h-7 text-brand-500 mb-3" />
             <h3 className="font-semibold text-stone-900 mb-1">For vendors</h3>
             <p className="text-sm text-stone-500 leading-relaxed mb-3">
@@ -208,7 +208,7 @@ export default function LandingPage() {
               List your business <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
             </span>
           </Link>
-          <Link href="/planners" className="card p-6 hover:border-brand-200 transition-colors group">
+          <Link href="/for-planners" className="card p-6 hover:border-brand-200 transition-colors group">
             <Briefcase className="w-7 h-7 text-brand-500 mb-3" />
             <h3 className="font-semibold text-stone-900 mb-1">For planners</h3>
             <p className="text-sm text-stone-500 leading-relaxed mb-3">

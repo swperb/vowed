@@ -1,151 +1,188 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { HeartHandshake, Check, Store } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { Store, Plus, Globe, Phone, Mail, Pencil, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { cn, formatCurrency } from "@/lib/utils";
+import type { Vendor } from "@/lib/db/schema";
+import { VendorModal } from "@/components/vendors/VendorModal";
 
-const DIFFERENTIATORS = [
-  { theKnot: "12-month lock-in contract", vowed: "Month-to-month, cancel any time" },
-  { theKnot: "$300-400 / month", vowed: "$39 / month, flat" },
-  { theKnot: "Buried in a pay-to-win algorithm", vowed: "Clearly labeled as featured" },
-  { theKnot: "Sales rep pressure tactics", vowed: "Self-serve signup, no calls" },
-];
+const STATUS_GROUPS = [
+  { key: "favorite", label: "Favorites" },
+  { key: "contacted", label: "Contacted" },
+  { key: "booked", label: "Booked" },
+  { key: "passed", label: "Passed" },
+] as const;
 
-const FAQ = [
-  { q: "How much does it cost?", a: "A flat $39 per month. No setup fees, no tiers, no annual contract. Cancel any time." },
-  { q: "What do I get?", a: "A featured listing shown to couples planning a wedding in your region and category, clearly labeled as featured." },
-  { q: "Are these real leads?", a: "Couples reach out directly. We never sell fake or recycled leads, and we don't take a cut of your bookings." },
-  { q: "Can I cancel?", a: "Any time, from your dashboard. No phone call, no retention script, no penalty." },
-];
+const STATUS_BADGE: Record<string, string> = {
+  favorite: "bg-blue-50 text-blue-700 border-blue-200",
+  contacted: "bg-amber-50 text-amber-700 border-amber-200",
+  booked: "bg-sage-50 text-sage-700 border-sage-200",
+  passed: "bg-stone-100 text-stone-500 border-stone-200",
+};
 
 export default function VendorsPage() {
-  const [submitted, setSubmitted] = useState(false);
-  const [pending, setPending] = useState(false);
+  const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editing, setEditing] = useState<Vendor | null>(null);
 
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setPending(true);
-    const fd = new FormData(e.currentTarget);
-    const body = {
-      businessName: fd.get("businessName"),
-      category: fd.get("category"),
-      email: fd.get("email"),
-      website: fd.get("website"),
-      region: fd.get("region"),
-    };
-    try {
-      const res = await fetch("/api/vendors", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      if (!res.ok) throw new Error();
-      setSubmitted(true);
-      toast.success("Thanks. We'll be in touch shortly.");
-    } catch {
-      toast.error("Something went wrong. Please try again.");
-    } finally {
-      setPending(false);
+  const fetchVendors = useCallback(async () => {
+    const res = await fetch("/api/vendors");
+    if (res.ok) setVendors(await res.json());
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchVendors();
+  }, [fetchVendors]);
+
+  async function changeStatus(v: Vendor, status: string) {
+    const prev = vendors;
+    setVendors((list) => list.map((x) => (x.id === v.id ? { ...x, status: status as Vendor["status"] } : x)));
+    const res = await fetch(`/api/vendors/${v.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    if (!res.ok) {
+      setVendors(prev);
+      toast.error("Couldn't update status");
     }
   }
 
+  async function remove(v: Vendor) {
+    if (!confirm(`Remove ${v.name}?`)) return;
+    const prev = vendors;
+    setVendors((list) => list.filter((x) => x.id !== v.id));
+    const res = await fetch(`/api/vendors/${v.id}`, { method: "DELETE" });
+    if (!res.ok) {
+      setVendors(prev);
+      toast.error("Couldn't remove vendor");
+    }
+  }
+
+  const bookedCount = vendors.filter((v) => v.status === "booked").length;
+  const bookedTotal = vendors
+    .filter((v) => v.status === "booked")
+    .reduce((s, v) => s + (v.priceEstimate ?? 0), 0);
+
+  function openAdd() {
+    setEditing(null);
+    setModalOpen(true);
+  }
+
   return (
-    <div className="min-h-screen bg-stone-50">
-      <nav className="border-b border-stone-100 bg-white px-6 py-4">
-        <Link href="/" className="inline-flex items-center gap-2 text-stone-900">
-          <HeartHandshake className="w-5 h-5 text-brand-600" />
-          <span className="font-serif text-lg font-semibold">Vowed</span>
-        </Link>
-      </nav>
-
-      <section className="max-w-3xl mx-auto px-4 pt-16 pb-10 text-center">
-        <div className="inline-flex items-center gap-2 rounded-full bg-brand-50 border border-brand-200 px-4 py-1.5 text-xs font-medium text-brand-700 mb-6">
-          <Store className="w-3 h-3" />
-          For wedding vendors
+    <div className="p-6 max-w-5xl mx-auto">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="font-serif text-3xl font-semibold text-stone-900">Vendors</h1>
+          <p className="text-stone-500 text-sm mt-1">
+            {vendors.length} tracked · {bookedCount} booked · {formatCurrency(bookedTotal)} booked spend
+          </p>
         </div>
-        <h1 className="font-serif text-4xl md:text-5xl font-semibold text-stone-900 leading-tight mb-5">
-          Reach couples who are actually planning, not browsing.
-        </h1>
-        <p className="text-lg text-stone-500 max-w-xl mx-auto">
-          $39/month flat. No lock-in. Cancel any time. Clearly labeled as featured. Self-serve.
-          Everything TheKnot makes painful, made simple.
-        </p>
-      </section>
+        <button onClick={openAdd} className="btn-primary text-sm">
+          <Plus className="w-4 h-4" />
+          Add vendor
+        </button>
+      </div>
 
-      <section className="max-w-3xl mx-auto px-4 pb-12">
-        <div className="card overflow-hidden">
-          <div className="grid grid-cols-2 text-sm">
-            <div className="bg-stone-50 px-5 py-3 font-medium text-stone-400 border-b border-stone-100">TheKnot</div>
-            <div className="bg-brand-50/40 px-5 py-3 font-medium text-brand-700 border-b border-brand-100">Vowed</div>
-            {DIFFERENTIATORS.map((d, i) => (
-              <div key={i} className="contents">
-                <div className="px-5 py-3 text-stone-400 line-through border-b border-stone-50">{d.theKnot}</div>
-                <div className="px-5 py-3 text-stone-700 border-b border-stone-50 flex items-center gap-2">
-                  <Check className="w-4 h-4 text-sage-500 shrink-0" />
-                  {d.vowed}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="max-w-md mx-auto px-4 pb-16">
-        <div className="card p-8">
-          {submitted ? (
-            <div className="text-center py-6">
-              <div className="w-12 h-12 rounded-full bg-sage-100 flex items-center justify-center mx-auto mb-4">
-                <Check className="w-6 h-6 text-sage-600" />
-              </div>
-              <h2 className="font-serif text-2xl font-semibold text-stone-900 mb-2">You're on the list</h2>
-              <p className="text-stone-500 text-sm">We'll reach out to get your listing set up.</p>
-            </div>
-          ) : (
-            <>
-              <h2 className="font-serif text-2xl font-semibold text-stone-900 mb-1">List your business</h2>
-              <p className="text-stone-500 text-sm mb-6">Tell us a bit about you and we'll get you set up.</p>
-              <form onSubmit={onSubmit} className="space-y-4">
-                <div>
-                  <label className="label" htmlFor="businessName">Business name</label>
-                  <input id="businessName" name="businessName" className="input" required maxLength={200} />
-                </div>
-                <div>
-                  <label className="label" htmlFor="category">Category</label>
-                  <input id="category" name="category" className="input" placeholder="e.g. Photographer, Florist, Venue" required maxLength={80} />
-                </div>
-                <div>
-                  <label className="label" htmlFor="email">Email</label>
-                  <input id="email" name="email" type="email" className="input" required maxLength={200} />
-                </div>
-                <div>
-                  <label className="label" htmlFor="website">Website</label>
-                  <input id="website" name="website" className="input" placeholder="optional" maxLength={200} />
-                </div>
-                <div>
-                  <label className="label" htmlFor="region">Region you serve</label>
-                  <input id="region" name="region" className="input" placeholder="optional, e.g. Nashville, TN" maxLength={120} />
-                </div>
-                <button type="submit" disabled={pending} className="btn-primary w-full justify-center">
-                  {pending ? "Submitting..." : "Request a listing"}
-                </button>
-              </form>
-            </>
-          )}
-        </div>
-      </section>
-
-      <section className="max-w-2xl mx-auto px-4 pb-20">
-        <h2 className="font-serif text-2xl font-semibold text-stone-900 text-center mb-8">Common questions</h2>
-        <div className="space-y-4">
-          {FAQ.map((item) => (
-            <div key={item.q} className="card p-5">
-              <h3 className="font-medium text-stone-900 mb-1">{item.q}</h3>
-              <p className="text-sm text-stone-500 leading-relaxed">{item.a}</p>
-            </div>
+      {loading ? (
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="card h-20 animate-pulse bg-stone-50" />
           ))}
         </div>
-      </section>
+      ) : vendors.length === 0 ? (
+        <div className="card p-12 text-center">
+          <Store className="w-12 h-12 text-stone-200 mx-auto mb-4" />
+          <p className="text-stone-500 mb-4">
+            No vendors yet. Add the venues, photographers, and others you're considering and track them
+            from favorite to booked.
+          </p>
+          <button onClick={openAdd} className="btn-primary text-sm">
+            <Plus className="w-4 h-4" />
+            Add your first vendor
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-8">
+          {STATUS_GROUPS.map((group) => {
+            const items = vendors.filter((v) => (v.status ?? "favorite") === group.key);
+            if (items.length === 0) return null;
+            return (
+              <section key={group.key}>
+                <h2 className="text-sm font-semibold text-stone-700 mb-3 flex items-center gap-2">
+                  {group.label}
+                  <span className="text-xs font-normal text-stone-400">{items.length}</span>
+                </h2>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  {items.map((v) => (
+                    <div key={v.id} className="card p-4">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <div className="font-medium text-stone-900 truncate">{v.name}</div>
+                          {v.category && <div className="text-xs text-stone-400">{v.category}</div>}
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button onClick={() => { setEditing(v); setModalOpen(true); }} className="p-1.5 text-stone-400 hover:text-stone-600" aria-label="Edit vendor">
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => remove(v)} className="p-1.5 text-stone-400 hover:text-red-500" aria-label="Remove vendor">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {(v.website || v.phone || v.email) && (
+                        <div className="flex flex-wrap items-center gap-3 text-xs text-stone-500 mt-2">
+                          {v.website && (
+                            <a href={v.website.startsWith("http") ? v.website : `https://${v.website}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-brand-600">
+                              <Globe className="w-3.5 h-3.5" /> Website
+                            </a>
+                          )}
+                          {v.phone && (
+                            <a href={`tel:${v.phone}`} className="inline-flex items-center gap-1 hover:text-brand-600">
+                              <Phone className="w-3.5 h-3.5" /> {v.phone}
+                            </a>
+                          )}
+                          {v.email && (
+                            <a href={`mailto:${v.email}`} className="inline-flex items-center gap-1 hover:text-brand-600">
+                              <Mail className="w-3.5 h-3.5" /> Email
+                            </a>
+                          )}
+                        </div>
+                      )}
+
+                      {v.notes && <p className="text-xs text-stone-500 mt-2 line-clamp-2">{v.notes}</p>}
+
+                      <div className="flex items-center justify-between mt-3">
+                        {v.priceEstimate != null ? (
+                          <span className="text-sm font-medium text-stone-700">{formatCurrency(v.priceEstimate)}</span>
+                        ) : (
+                          <span />
+                        )}
+                        <select
+                          value={v.status ?? "favorite"}
+                          onChange={(e) => changeStatus(v, e.target.value)}
+                          className={cn("text-xs font-medium rounded-full border px-2 py-1 cursor-pointer", STATUS_BADGE[v.status ?? "favorite"])}
+                          aria-label="Vendor status"
+                        >
+                          {STATUS_GROUPS.map((g) => (
+                            <option key={g.key} value={g.key}>{g.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            );
+          })}
+        </div>
+      )}
+
+      <VendorModal open={modalOpen} onOpenChange={setModalOpen} onSaved={fetchVendors} vendor={editing} />
     </div>
   );
 }
