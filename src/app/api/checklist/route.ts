@@ -9,7 +9,7 @@ import { parseBody } from "@/lib/validation";
 import { z } from "zod";
 
 export async function GET() {
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const wedding = await db.query.weddings.findFirst({ where: eq(weddings.clerkUserId, userId) });
@@ -55,7 +55,7 @@ const createSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const wedding = await db.query.weddings.findFirst({ where: eq(weddings.clerkUserId, userId) });

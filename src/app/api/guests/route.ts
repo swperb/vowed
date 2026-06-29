@@ -9,7 +9,7 @@ import { parseBody, sideEnum, roleEnum } from "@/lib/validation";
 import { z } from "zod";
 
 export async function GET(req: NextRequest) {
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { searchParams } = new URL(req.url);
@@ -59,7 +59,7 @@ const createSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const wedding = await db.query.weddings.findFirst({

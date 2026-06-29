@@ -3,14 +3,14 @@ import { db } from "@/lib/db";
 import { weddings, guests, guestGroups } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 
-export async function GET(req: NextRequest, { params }: { params: { slug: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const { searchParams } = new URL(req.url);
   const q = searchParams.get("q")?.toLowerCase().trim();
 
   if (!q || q.length < 2) return NextResponse.json([]);
 
   const wedding = await db.query.weddings.findFirst({
-    where: eq(weddings.websiteSlug, params.slug),
+    where: eq(weddings.websiteSlug, (await params).slug),
   });
 
   if (!wedding) return NextResponse.json([]);

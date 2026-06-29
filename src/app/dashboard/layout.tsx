@@ -68,7 +68,7 @@ export default function DashboardLayout({
             Settings
           </Link>
           <div className="flex items-center gap-3 px-3 py-2">
-            <UserButton afterSignOutUrl="/" />
+            <UserButton />
             <span className="text-sm text-stone-600">Account</span>
           </div>
         </div>

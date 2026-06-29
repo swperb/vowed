@@ -10,7 +10,7 @@ import { Users, PiggyBank, CheckSquare, Calendar, ArrowRight, Heart } from "luci
 import Link from "next/link";
 
 export default async function DashboardPage() {
-  const { userId } = auth();
+  const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 
   const wedding = await db.query.weddings.findFirst({

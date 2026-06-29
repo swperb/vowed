@@ -1,7 +1,7 @@
 import Link from "next/link";
 import {
   HeartHandshake, Users, PiggyBank, CheckSquare, Globe,
-  Zap, Shield, Smartphone, ArrowRight, Star
+  Zap, Shield, Smartphone, ArrowRight, Star, Heart, Store, Briefcase
 } from "lucide-react";
 
 export default function LandingPage() {
@@ -118,8 +118,8 @@ export default function LandingPage() {
               },
               {
                 icon: Smartphone,
-                title: "iOS-first premium",
-                desc: "Native app with Contacts sync, Calendar integration, iMessage templates, and AirDrop guest cards. Upgrade when you're ready.",
+                title: "Free iOS app",
+                desc: "Native app with Contacts sync, Calendar integration, and a native share sheet for your RSVP link. Free, like everything else.",
               },
             ].map((f, i) => (
               <div key={i} className="p-6 rounded-xl border border-stone-100 hover:border-brand-200 transition-colors group">
@@ -132,68 +132,75 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Pricing */}
+      {/* Pricing / how it's funded */}
       <section className="py-20 max-w-4xl mx-auto px-4">
         <h2 className="font-serif text-3xl font-semibold text-center text-stone-900 mb-4">
-          Honest pricing
+          Free for couples. Always.
         </h2>
-        <p className="text-center text-stone-500 mb-12">
-          No bait-and-switch. The free tier is genuinely free and open source.
+        <p className="text-center text-stone-500 mb-12 max-w-2xl mx-auto">
+          No paywalls, no premium tier, no feature gates. Every planning tool is free forever, on
+          web and iOS. Vowed is funded by vendors and wedding planners, never by the couples doing
+          the planning.
         </p>
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="card p-8">
-            <div className="text-2xl font-serif font-semibold text-stone-900 mb-1">Free</div>
-            <div className="text-stone-500 text-sm mb-6">Forever · Open source</div>
-            <ul className="space-y-3 text-sm text-stone-700 mb-8">
-              {[
-                "Unlimited guests & groups",
-                "Full budget tracker",
-                "Complete checklist",
-                "Wedding website with RSVP",
-                "CSV import & export",
-                "Web app on any device",
-              ].map((f) => (
-                <li key={f} className="flex items-center gap-2">
-                  <CheckSquare className="w-4 h-4 text-sage-500 shrink-0" />
-                  {f}
-                </li>
-              ))}
-            </ul>
-            <Link href="/sign-up" className="btn-secondary w-full justify-center">
-              Start free
-            </Link>
+
+        {/* The free plan */}
+        <div className="card p-8 mb-6">
+          <div className="flex flex-wrap items-baseline justify-between gap-2 mb-1">
+            <div className="text-2xl font-serif font-semibold text-stone-900">Everything, free</div>
+            <div className="text-stone-500 text-sm">Web + iOS · Open source</div>
           </div>
-          <div className="card p-8 border-brand-200 bg-brand-50/30 relative">
-            <div className="absolute -top-3 right-6 rounded-full bg-brand-600 text-white text-xs font-medium px-3 py-1">
-              Most popular
-            </div>
-            <div className="text-2xl font-serif font-semibold text-stone-900 mb-1">
-              $49 <span className="text-base font-sans font-normal text-stone-500">one-time</span>
-            </div>
-            <div className="text-stone-500 text-sm mb-6">Or $9/month · iOS native app</div>
-            <ul className="space-y-3 text-sm text-stone-700 mb-8">
-              {[
-                "Everything in Free",
-                "Native iOS app",
-                "Apple Contacts import",
-                "Apple Calendar sync",
-                "iMessage & AirDrop share",
-                "Drag-and-drop seating chart",
-                "Printable PDFs (timeline, seating)",
-                "Guest group messaging",
-                "Priority support",
-              ].map((f) => (
-                <li key={f} className="flex items-center gap-2">
-                  <CheckSquare className="w-4 h-4 text-brand-500 shrink-0" />
-                  {f}
-                </li>
-              ))}
-            </ul>
-            <Link href="/sign-up" className="btn-primary w-full justify-center">
-              Get Premium
-              <ArrowRight className="w-4 h-4" />
-            </Link>
+          <p className="text-stone-500 text-sm mb-6">No credit card. No trial that expires. No upsell.</p>
+          <ul className="grid sm:grid-cols-2 gap-3 text-sm text-stone-700 mb-8">
+            {[
+              "Unlimited guests & groups",
+              "Full budget tracker",
+              "Complete checklist",
+              "Wedding website with RSVP",
+              "CSV import & export",
+              "Free native iOS app",
+            ].map((f) => (
+              <li key={f} className="flex items-center gap-2">
+                <CheckSquare className="w-4 h-4 text-sage-500 shrink-0" />
+                {f}
+              </li>
+            ))}
+          </ul>
+          <Link href="/sign-up" className="btn-primary justify-center">
+            Start planning, free
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+
+        {/* How it stays free */}
+        <div className="grid md:grid-cols-3 gap-4">
+          <div className="card p-6">
+            <Heart className="w-7 h-7 text-brand-500 mb-3" />
+            <h3 className="font-semibold text-stone-900 mb-1">Support the project</h3>
+            <p className="text-sm text-stone-500 leading-relaxed mb-3">
+              Love Vowed? Leave an optional one-time tip. Nothing is ever locked behind it.
+            </p>
+            <span className="text-xs font-medium text-stone-400">Coming soon</span>
           </div>
+          <Link href="/vendors" className="card p-6 hover:border-brand-200 transition-colors group">
+            <Store className="w-7 h-7 text-brand-500 mb-3" />
+            <h3 className="font-semibold text-stone-900 mb-1">For vendors</h3>
+            <p className="text-sm text-stone-500 leading-relaxed mb-3">
+              Reach couples who are actively planning. Flat $39/month, cancel anytime, no lock-in.
+            </p>
+            <span className="text-sm font-medium text-brand-600 inline-flex items-center gap-1">
+              List your business <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+            </span>
+          </Link>
+          <Link href="/planners" className="card p-6 hover:border-brand-200 transition-colors group">
+            <Briefcase className="w-7 h-7 text-brand-500 mb-3" />
+            <h3 className="font-semibold text-stone-900 mb-1">For planners</h3>
+            <p className="text-sm text-stone-500 leading-relaxed mb-3">
+              Run Vowed for your clients under your own brand.
+            </p>
+            <span className="text-sm font-medium text-brand-600 inline-flex items-center gap-1">
+              Learn more <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+            </span>
+          </Link>
         </div>
       </section>
 

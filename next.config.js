@@ -10,9 +10,7 @@ const securityHeaders = [
 
 const nextConfig = {
   poweredByHeader: false,
-  experimental: {
-    serverComponentsExternalPackages: ["@libsql/client"],
-  },
+  serverExternalPackages: ["@libsql/client"],
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
