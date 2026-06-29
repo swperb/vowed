@@ -7,6 +7,9 @@ const isPublic = createRouteMatcher([
   "/rsvp/(.*)",
   "/w/(.*)",
   "/api/rsvp/(.*)",
+  "/privacy",
+  "/terms",
+  "/opengraph-image(.*)",
 ]);
 
 export default clerkMiddleware((auth, req) => {

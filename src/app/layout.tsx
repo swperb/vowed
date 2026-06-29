@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Toaster } from "sonner";
+import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://vowed.love";
@@ -34,6 +35,7 @@ export default function RootLayout({
         <body>
           {children}
           <Toaster position="bottom-right" richColors closeButton />
+          <Analytics />
         </body>
       </html>
     </ClerkProvider>
