@@ -5,7 +5,7 @@ export default {
   dialect: "sqlite",
   driver: "turso",
   dbCredentials: {
-    url: process.env.TURSO_DATABASE_URL ?? "file:./vowkeeper.db",
+    url: process.env.TURSO_DATABASE_URL ?? "file:./vowed.db",
     authToken: process.env.TURSO_AUTH_TOKEN,
   },
 };

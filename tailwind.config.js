@@ -4,7 +4,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // VowKeeper brand palette — warm but not saccharine
+        // Vowed brand palette, warm but not saccharine
         brand: {
           50:  "#fdf8f6",
           100: "#f9ede8",
