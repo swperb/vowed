@@ -11,9 +11,10 @@ export async function sendRsvpConfirmation(opts: {
   guestName: string;
   coupleName: string;
   attending: boolean;
+  replyTo?: string;
 }): Promise<void> {
   if (!resend) return;
-  const { to, guestName, coupleName, attending } = opts;
+  const { to, guestName, coupleName, attending, replyTo } = opts;
   const subject = attending
     ? `Your RSVP to ${coupleName} is confirmed`
     : `Your RSVP to ${coupleName}`;
@@ -21,7 +22,8 @@ export async function sendRsvpConfirmation(opts: {
     ? `Hi ${guestName},\n\nThanks for confirming. We have you down as attending ${coupleName}'s wedding, and we'll be in touch with the details closer to the day.\n\nWith love,\n${coupleName}`
     : `Hi ${guestName},\n\nThanks for letting us know you can't make it to ${coupleName}'s wedding. You'll be missed.\n\nWith love,\n${coupleName}`;
   try {
-    await resend.emails.send({ from, to, subject, text });
+    // Reply-To points at the couple so a guest's reply reaches them, not noreply@
+    await resend.emails.send({ from, to, subject, text, ...(replyTo ? { replyTo } : {}) });
   } catch (err) {
     console.error("RSVP confirmation email failed:", err);
   }
